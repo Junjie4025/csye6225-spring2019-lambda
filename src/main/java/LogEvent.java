@@ -19,7 +19,7 @@ public class LogEvent implements RequestHandler<SNSEvent, Object> {
 
     final static Regions REGION = Regions.US_EAST_1;
     final static String TABLE_NAME = "csye6225";
-    final static String DYNAMO_KEY = "email";
+    final static String DYNAMO_KEY = "id";
     final static String FROM_EMAIL = "liang@csye6225-spring2019-liang2.me";
 
     public Object handleRequest(SNSEvent request, Context context) {
