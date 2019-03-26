@@ -11,7 +11,6 @@ import com.amazonaws.services.lambda.runtime.events.SNSEvent;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClientBuilder;
 import com.amazonaws.services.simpleemail.model.*;
-import org.apache.commons.lang.RandomStringUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -35,7 +34,7 @@ public class LogEvent implements RequestHandler<SNSEvent, Object> {
 
         String toEmail = request.getRecords().get(0).getSNS().getMessage().split(",")[0];
         Item item = table.getItem(DYNAMO_KEY, toEmail);
-        String token = RandomStringUtils.random(20);
+        String token = generateToken(toEmail);
 
         if (item == null) {
             item = new Item().withPrimaryKey(DYNAMO_KEY, toEmail).with("token", token)
@@ -72,5 +71,19 @@ public class LogEvent implements RequestHandler<SNSEvent, Object> {
 
     private String getTimeStamp() {
         return new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss").format(Calendar.getInstance().getTime());
+    }
+
+    private String generateToken(String target){
+        return generateToken(target, "zhaoxiaohanhejunjieliangliuchangsixswl");
+    }
+
+    private String generateToken(String target, String salt){
+        StringBuilder tokenBuilder = new StringBuilder();
+        for(char c : target.toCharArray()){
+            int hash = (salt + c).hashCode();
+            String hashHex = Integer.toHexString(hash);
+            tokenBuilder.append(hashHex);
+        }
+        return tokenBuilder.toString();
     }
 }
