@@ -56,8 +56,7 @@ jobs:
       - run:
           name: Check IAM Role and exist Lambda Functions
           command: |
-            echo 'export MY_ENV_VAR="FOO"' >> $BASH_ENV
-            aws sns list-topics --query Topics[0] --output text
+            echo 'export MY_ENV_VAR="$(aws sns list-topics --query Topics[0] --output text)"' >> $BASH_ENV
       - run:
           name: Check Bash Shell Output
           command: |
