@@ -15,7 +15,6 @@ jobs:
           name: Install awscli
           command: |
             sudo pip install awscli
-            aws configure --output text
 
       - run:
           name: Set AWS Default Region
