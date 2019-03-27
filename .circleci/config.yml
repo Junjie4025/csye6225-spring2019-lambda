@@ -62,3 +62,11 @@ jobs:
           name: Create Lambda Function
           command: |
             aws lambda create-function --function-name ResetPassword --runtime java8 --role ${Role_ARN} --handler handleRequest --description csye6225-lambda-function --code S3Bucket=${S3_BUCKET_URL},S3Key=csye6225-lambda-${CIRCLE_BUILD_NUM}.zip
+      - run:
+          - name: Get AWS Lambda Function Arn
+          - command :|
+            echo "export LambdaFunction_ARN=$(aws lambda list-functions --query 'Functions[?FunctionName==`ResetPassword`].FunctionArn' --output text)" >> $BASH_ENV
+      - run:
+          name: Subscribe Topic
+          command: |
+            aws sns subscribe --topic-arn ${Topic_ARN} --protocol lambda --notification-endpoint ${LambdaFunction_ARN}
