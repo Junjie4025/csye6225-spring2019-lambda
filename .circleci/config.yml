@@ -55,6 +55,6 @@ jobs:
       - run:
           name: Create Lambda Function
           command: |
-            name="hahaha"
+            name=haha
             $name
             aws lambda create-function --function-name ResetPassword --runtime java8 --role arn:aws:iam::509777624845:role/LambdaExeRole --handler handleRequest --description csye6225-lambda-function --code S3Bucket=${S3_BUCKET_URL},S3Key=csye6225-lambda-${CIRCLE_BUILD_NUM}.zip
