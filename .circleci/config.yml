@@ -55,7 +55,8 @@ jobs:
       - run:
           name: Check IAM Role and exist Lambda Functions
           command: |
-            echo echo 'export GIT_SHA1="$CIRCLE_SHA1"' >> $BASH_ENV
+            echo 'export VERY_IMPORTANT=$(cat important_value)' >> $BASH_ENV
+            source $BASH_ENV
             echo $Bash_ENV
       - run:
           name: Create Lambda Function
