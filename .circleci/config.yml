@@ -37,8 +37,7 @@ jobs:
             echo "Hello the current build number is ${CIRCLE_BUILD_NUM}"
             pwd
             mkdir -p codedeploy_artifact
-            zip -r csye6225-lambda-${CIRCLE_BUILD_NUM}.zip target/csye6225lambda-1.0-SNAPSHOT.jar *.yml
-            mv csye6225-lambda-${CIRCLE_BUILD_NUM}.zip codedeploy_artifact/
+            cp target/csye6225lambda-1.0-SNAPSHOT.jar codedeploy_artifact/target/csye6225lambda-${CIRCLE_BUILD_NUM}-SNAPSHOT.jar
             cd codedeploy_artifact
             ls -al
             pwd
@@ -61,7 +60,7 @@ jobs:
       - run:
           name: Create Lambda Function
           command: |
-            aws lambda create-function --function-name ResetPassword --runtime java8 --role ${Role_ARN} --handler LogEvent::handleRequest --description csye6225-lambda-function --code S3Bucket=${S3_BUCKET_URL},S3Key=csye6225-lambda-${CIRCLE_BUILD_NUM}.zip
+            aws lambda create-function --function-name ResetPassword --runtime java8 --role ${Role_ARN} --handler LogEvent::handleRequest --description csye6225-lambda-function --code S3Bucket=${S3_BUCKET_URL},S3Key=csye6225lambda-${CIRCLE_BUILD_NUM}-SNAPSHOT.jar
       - run:
           name: Get AWS Lambda Function Arn
           command: |
