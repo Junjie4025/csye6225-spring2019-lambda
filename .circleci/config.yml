@@ -57,7 +57,7 @@ jobs:
           name: Check IAM Role and exist Topic
           command: |
             echo 'export Topic_ARN="$(aws sns list-topics --query Topics[0] --output text)"' >> $BASH_ENV
-            echo "export Role_ARN=$(aws iam list-roles --query Roles[?RoleName==`LambdaExeRole`].Arn' --output text)" >> $BASH_ENV
+            echo "export Role_ARN=$(aws iam list-roles --query 'Roles[?RoleName==`LambdaExeRole`].Arn' --output text)" >> $BASH_ENV
       - run:
           name: Create Lambda Function
           command: |
