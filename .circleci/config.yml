@@ -25,7 +25,7 @@ jobs:
           command: |
             pwd
             ls -al
-            mvn clean package -DskipTests
+            mvn clean package shade:shade -DskipTests
             cd target/
             ls -al
             cd ../
