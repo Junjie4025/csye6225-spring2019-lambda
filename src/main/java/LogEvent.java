@@ -21,7 +21,7 @@ public class LogEvent implements RequestHandler<SNSEvent, Object> {
     final static Regions REGION = Regions.US_EAST_1;
     final static String TABLE_NAME = "csye6225";
     final static String DYNAMO_KEY = "id";
-    final static String FROM_EMAIL = "liang@csye6225-spring2019-liang2.me";
+    final static String FROM_EMAIL = "chanceliu@csye6225-spring2019-liuchangsi.me";
 
     public Object handleRequest(SNSEvent request, Context context) {
         context.getLogger().log("Invocation started: " + getTimeStamp());
