@@ -36,15 +36,13 @@ jobs:
             echo "Hello the current build number is ${CIRCLE_BUILD_NUM}"
             pwd
             mkdir -p codedeploy_artifact
-            zip -r csye6225lambda-${CIRCLE_BUILD_NUM}.zip /target/csye6225lambda-1.0-SNAPSHOT-shaded.jar *.yml
+            zip -r csye6225lambda-${CIRCLE_BUILD_NUM}.zip /target/csye6225lambda-1.0-SNAPSHOT.jar *.yml
             mv csye6225-lambda-${CIRCLE_BUILD_NUM}.zip codedeploy_artifact/
             cd codedeploy_artifact
             ls -al
             pwd
             cd ..
             pwd
-            ls -al
-            cd target
             ls -al
       - run:
           name: Upload Artifact to S3
