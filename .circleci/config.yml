@@ -13,7 +13,9 @@ jobs:
 
       - run:
           name: Install awscli
-          command: sudo pip install awscli
+          command: |
+            sudo pip install awscli
+            aws configure --output text
 
       - run:
           name: Set AWS Default Region
@@ -55,9 +57,10 @@ jobs:
       - run:
           name: Check IAM Role and exist Lambda Functions
           command: |
-            echo 'export VERY_IMPORTANT=$(cat important_value)' >> $BASH_ENV
-            source $BASH_ENV
-            echo $Bash_ENV
+            echo 'export MY_ENV_VAR="FOO"' >> $BASH_ENV
+            echo ${MY_ENV_VAR}
+            echo 'export TopicARN="test"' >> $BASH_ENV
+            aws sns list-topics --query Topics[0] --output text
       - run:
           name: Create Lambda Function
           command: |
