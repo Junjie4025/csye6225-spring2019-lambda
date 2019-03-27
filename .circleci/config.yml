@@ -1,0 +1,58 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/openjdk:8-jdk
+    steps:
+      - checkout
+
+      - run:
+          name: Install packages
+          command: sudo apt-get update && sudo apt-get install wget zip unzip python2.7 python-pip -y
+
+
+      - run:
+          name: Install awscli
+          command: sudo pip install awscli
+
+      - run:
+          name: Set AWS Default Region
+          command: aws configure set default.region us-east-1
+
+      - run:
+          name: Build Artifact
+          command: |
+            pwd
+            ls -al
+            mvn clean package -DskipTests
+            cd target/
+            ls -al
+            cd ../
+            pwd
+            ls -al
+      - run:
+          name: Zip Artifact
+          command: |
+            echo "Hello the current build number is ${CIRCLE_BUILD_NUM}"
+            pwd
+            mkdir -p codedeploy_artifact
+            zip -r csye6225-lambda-${CIRCLE_BUILD_NUM}.zip /target/csye6225lambda-1.0-SNAPSHOT.jar *.yml
+            mv csye6225-lambda-${CIRCLE_BUILD_NUM}.zip codedeploy_artifact/
+            cd codedeploy_artifact
+            ls -al
+            pwd
+            cd ..
+            pwd
+            ls -al
+      - run:
+          name: Upload Artifact to S3
+          command: |
+            aws s3 sync codedeploy_artifact s3://${S3_BUCKET_URL}
+      - run:
+          name: Make CodeDeploy API call
+          command: |
+            echo "Hello CodeDeploy"
+      - run:
+          name: Deploy from S3 Bucket
+          command: |
+            aws deploy create-deployment --application-name csye6225-lambda --deployment-config-name CodeDeployDefault.LambdaAllAtOnce --deployment-group-name csye6225-lambda-deployment --description "csye6225 lambda create" --s3-location bucket=${S3_BUCKET_URL},bundleType=zip,key=csye6225-web-app-${CIRCLE_BUILD_NUM}.zip
