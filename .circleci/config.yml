@@ -44,6 +44,8 @@ jobs:
             cd ..
             pwd
             ls -al
+            cd target
+            ls -al
       - run:
           name: Upload Artifact to S3
           command: |
