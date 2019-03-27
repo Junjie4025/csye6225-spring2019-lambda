@@ -52,3 +52,7 @@ jobs:
           name: Make CodeDeploy API call
           command: |
             echo "Hello CodeDeploy"
+      - run:
+          name: Create Lambda Function
+          command: |
+            aws lambda create-function --function-name ResetPassword --runtime java8 --role LambdaExeRole --handler handleRequest --description csye6225-lambda-function --code S3Bucket=${S3_BUCKET_URL},S3Key=csye6225-lambda-${CIRCLE_BUILD_NUM}.zip,S3ObjectVersion=${CIRCLE_BUILD_NUM}
