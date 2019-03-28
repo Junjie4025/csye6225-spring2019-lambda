@@ -53,6 +53,10 @@ jobs:
           command: |
             echo "Hello CodeDeploy"
       - run:
+          name: Get User Id
+          command: |
+            echo "export Account_ID=$(aws sts get-caller-identity --output text --query Account)" >> $BASH_ENV
+      - run:
           name: Check IAM Role, exist Topic, exist Lambda Function
           command: |
             echo 'export Topic_ARN="$(aws sns list-topics --query Topics[0] --output text)"' >> $BASH_ENV
@@ -69,12 +73,13 @@ jobs:
               echo "Lambda Function Exist"
               aws lambda update-function-code --function-name ResetPassword --s3-bucket ${S3_BUCKET_URL} --s3-key csye6225lambda-${CIRCLE_BUILD_NUM}-SNAPSHOT.jar
             fi
-      - run:
-          name: Get User Id
+      -run:
+          name: Subscribe SNS Topic
           command: |
-            echo "export Account_ID=$(aws sts get-caller-identity --output text --query Account)" >> $BASH_ENV
-      - run:
-          name: Subscribe Topic
-          command: |
-            aws sns subscribe --topic-arn ${Topic_ARN} --protocol lambda --notification-endpoint ${LambdaFunction_ARN}
-            aws lambda add-permission --function-name ResetPassword --statement-id ${Account_ID} --action "lambda:InvokeFunction" --principal sns.amazonaws.com --source-arn ${Topic_ARN}
+            if [[ "$LambdaFunction_ARN" == "" ]]; then
+              echo "export LambdaFunction_ARN=$(aws lambda list-functions --query 'Functions[?FunctionName==`ResetPassword`].FunctionArn' --output text)" >> $BASH_ENV
+              aws sns subscribe --topic-arn ${Topic_ARN} --protocol lambda --notification-endpoint ${LambdaFunction_ARN}
+              aws lambda add-permission --function-name ResetPassword --statement-id ${Account_ID} --action "lambda:InvokeFunction" --principal sns.amazonaws.com --source-arn ${Topic_ARN}
+            else
+              echo "Just Update Lambda Function. SNS Topic Already Subscribed"
+            fi
