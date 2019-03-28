@@ -30,12 +30,17 @@ public class LogEvent implements RequestHandler<SNSEvent, Object> {
         context.getLogger().log(request.getRecords().get(0).getSNS().getMessage());
 
         AmazonDynamoDB AmazonDynamoDBclient = AmazonDynamoDBClientBuilder.standard().withRegion(REGION).build();
-        DynamoDB dynamoDB = new DynamoDB(AmazonDynamoDBclient);
-        Table table = dynamoDB.getTable(TABLE_NAME);
 
+        DynamoDB dynamoDB = new DynamoDB(AmazonDynamoDBclient);
+        context.getLogger().log("Reayd: Get DynamoDB Instance");
+        Table table = dynamoDB.getTable(TABLE_NAME);
+        context.getLogger().log("Reayd: Get DynamoDB Table");
         String toEmail = request.getRecords().get(0).getSNS().getMessage().split(",")[0];
+        context.getLogger().log("Reayd: Read Email from input");
         Item item = table.getItem(DYNAMO_KEY, toEmail);
-        String token = RandomStringUtils.random(50);
+//        String token = RandomStringUtils.random(50);
+        String token = "123";
+        context.getLogger().log("Reayd: Get Random String");
         context.getLogger().log("3: " + token);
         if (item == null) {
             item = new Item().withPrimaryKey(DYNAMO_KEY, toEmail).with("token", token)
