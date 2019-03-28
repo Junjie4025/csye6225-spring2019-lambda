@@ -62,10 +62,12 @@ jobs:
           command: |
             aws lambda create-function --function-name ResetPassword --runtime java8 --role ${Role_ARN} --handler LogEvent::handleRequest --description csye6225-lambda-function --timeout 60 --memory-size 256 --environment Variables={FROM_EMAIL=${FROM_EMAIL}} --code S3Bucket=${S3_BUCKET_URL},S3Key=csye6225lambda-${CIRCLE_BUILD_NUM}-SNAPSHOT.jar
       - run:
-          name: Get AWS Lambda Function Arn
+          name: Get AWS Lambda Function Arn and User Id
           command: |
             echo "export LambdaFunction_ARN=$(aws lambda list-functions --query 'Functions[?FunctionName==`ResetPassword`].FunctionArn' --output text)" >> $BASH_ENV
+            echo "export Account_ID=$(aws sts get-caller-identity --output text --query 'Account')" >> $BASH_ENV
       - run:
           name: Subscribe Topic
           command: |
             aws sns subscribe --topic-arn ${Topic_ARN} --protocol lambda --notification-endpoint ${LambdaFunction_ARN}
+            aws lambda add-permission --function-name ResetPassword --statement-id ${Account_ID} --action "lambda:InvokeFunction" --principal sns.amazonaws.com --source-arn ${Topic_ARN}
