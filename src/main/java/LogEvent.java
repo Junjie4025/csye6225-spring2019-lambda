@@ -30,7 +30,7 @@ public class LogEvent implements RequestHandler<SNSEvent, Object> {
         context.getLogger().log(request.getRecords().get(0).getSNS().getMessage());
 
         AmazonDynamoDB AmazonDynamoDBclient = AmazonDynamoDBClientBuilder.standard().withRegion(REGION).build();
-
+        context.getLogger().log("Reayd: Init DynamoDB Client");
         DynamoDB dynamoDB = new DynamoDB(AmazonDynamoDBclient);
         context.getLogger().log("Reayd: Get DynamoDB Instance");
         Table table = dynamoDB.getTable(TABLE_NAME);
