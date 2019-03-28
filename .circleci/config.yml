@@ -61,7 +61,8 @@ jobs:
       - run:
           name: Create Lambda Function
           command: |
-            if [[ "$LambdaFunction_ARN" == null ]]; then
+            echo "${LambdaFunction_ARN}"
+            if [[ "$LambdaFunction_ARN" == "" ]]; then
               echo "LambdaFunction Exist"
               aws lamdba update-function-code --function-name ResetPassword --s3-bucket ${S3_BUCKET_URL} --s3-key csye6225lambda-${CIRCLE_BUILD_NUM}-SNAPSHOT.jar
             else
