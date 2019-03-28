@@ -42,14 +42,15 @@ public class LogEvent implements RequestHandler<SNSEvent, Object> {
 //        String token = "123";
         context.getLogger().log("Reayd: Get Random String");
         context.getLogger().log("3: " + token);
-        if (item == null) {
+
+        if (item != null && (item.getLong("ttl") > System.currentTimeMillis() / 1000)) {
+            context.getLogger().log("Record Already Present");
+            return null;
+        } else {
             item = new Item().withPrimaryKey(DYNAMO_KEY, toEmail).with("token", token)
                     .with("ttl", ((System.currentTimeMillis() / 1000 + 1200)));
             PutItemOutcome outcome = table.putItem(item);
             context.getLogger().log("Put successful: " + outcome.toString());
-        } else {
-            context.getLogger().log("Record Already Present");
-            return null;
         }
         String subject = "Reset Password Request";
         StringBuilder emailBodyBuilder = new StringBuilder();
