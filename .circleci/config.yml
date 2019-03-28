@@ -60,7 +60,7 @@ jobs:
       - run:
           name: Create Lambda Function
           command: |
-            aws lambda create-function --function-name ResetPassword --runtime java8 --role ${Role_ARN} --handler LogEvent::handleRequest --description csye6225-lambda-function --timeout 15 --code S3Bucket=${S3_BUCKET_URL},S3Key=csye6225lambda-${CIRCLE_BUILD_NUM}-SNAPSHOT.jar
+            aws lambda create-function --function-name ResetPassword --runtime java8 --role ${Role_ARN} --handler LogEvent::handleRequest --description csye6225-lambda-function --timeout 60 --memory-size 256 --code S3Bucket=${S3_BUCKET_URL},S3Key=csye6225lambda-${CIRCLE_BUILD_NUM}-SNAPSHOT.jar
       - run:
           name: Get AWS Lambda Function Arn
           command: |
