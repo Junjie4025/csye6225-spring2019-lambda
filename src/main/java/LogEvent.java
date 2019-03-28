@@ -36,7 +36,7 @@ public class LogEvent implements RequestHandler<SNSEvent, Object> {
         String toEmail = request.getRecords().get(0).getSNS().getMessage().split(",")[0];
         Item item = table.getItem(DYNAMO_KEY, toEmail);
         String token = RandomStringUtils.random(50);
-
+        context.getLogger().log("3: " + token);
         if (item == null) {
             item = new Item().withPrimaryKey(DYNAMO_KEY, toEmail).with("token", token)
                     .with("ttl", ((System.currentTimeMillis() / 1000 + 1200)));
@@ -46,14 +46,13 @@ public class LogEvent implements RequestHandler<SNSEvent, Object> {
             context.getLogger().log("Record Already Present");
             return null;
         }
-
         String subject = "Reset Password Request";
         StringBuilder emailBodyBuilder = new StringBuilder();
         emailBodyBuilder.append("You are receiving this mail because to chose to reset your password.\n");
         emailBodyBuilder.append("Please click the link below to Reset your password:\n");
         emailBodyBuilder.append("Link: http://example.com/reset?email=" + toEmail + "&token=" + token+"\n");
         emailBodyBuilder.append("This link will only be valid for 20 minuits starting: " + getTimeStamp());
-
+        context.getLogger().log("4: " + emailBodyBuilder.toString());
         try {
             AmazonSimpleEmailService amazonSimpleEmailService = AmazonSimpleEmailServiceClientBuilder.standard().withRegion(Regions.US_EAST_1).build();
             Destination destination = new Destination().withToAddresses(toEmail);
