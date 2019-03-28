@@ -42,21 +42,22 @@ public class LogEvent implements RequestHandler<SNSEvent, Object> {
 //        String token = "123";
         context.getLogger().log("Reayd: Get Random String");
         context.getLogger().log("3: " + token);
-        if (item == null) {
+
+        if (item != null && (item.getLong("ttl") > System.currentTimeMillis() / 1000)) {
+            context.getLogger().log("Record Already Present");
+            return null;
+        } else {
             item = new Item().withPrimaryKey(DYNAMO_KEY, toEmail).with("token", token)
                     .with("ttl", ((System.currentTimeMillis() / 1000 + 1200)));
             PutItemOutcome outcome = table.putItem(item);
             context.getLogger().log("Put successful: " + outcome.toString());
-        } else {
-            context.getLogger().log("Record Already Present");
-            return null;
         }
         String subject = "Reset Password Request";
         StringBuilder emailBodyBuilder = new StringBuilder();
-        emailBodyBuilder.append("You are receiving this mail because to chosegi to reset your password.\n");
-        emailBodyBuilder.append("Please click the link below to Reset your password:\n");
-        emailBodyBuilder.append("Link: http://example.com/reset?email=" + toEmail + "&token=" + token+"\n");
-        emailBodyBuilder.append("This link will only be valid for 20 minuits starting: " + getTimeStamp());
+        emailBodyBuilder.append("<p>You are receiving this mail because to chosegi to reset your password.</p>\n");
+        emailBodyBuilder.append("<p>Please click the link below to Reset your password:</p>\n");
+        emailBodyBuilder.append("<p> Link: <a href='http://example.com/reset?email=" + toEmail + "&token=" + token+"'>" + "http://example.com/reset?email=" + toEmail + "&token=" + token + "</a></p>\n");
+        emailBodyBuilder.append("<p>This link will only be valid for 20 minuits starting: " + getTimeStamp() + "</p>");
         context.getLogger().log("4: " + emailBodyBuilder.toString());
         try {
             AmazonSimpleEmailService amazonSimpleEmailService = AmazonSimpleEmailServiceClientBuilder.standard().withRegion(Regions.US_EAST_1).build();
