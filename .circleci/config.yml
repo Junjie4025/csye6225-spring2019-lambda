@@ -73,7 +73,7 @@ jobs:
               echo "Lambda Function Exist"
               aws lambda update-function-code --function-name ResetPassword --s3-bucket ${S3_BUCKET_URL} --s3-key csye6225lambda-${CIRCLE_BUILD_NUM}-SNAPSHOT.jar
             fi
-      -run:
+      - run:
           name: Subscribe SNS Topic
           command: |
             if [[ "$LambdaFunction_ARN" == "" ]]; then
