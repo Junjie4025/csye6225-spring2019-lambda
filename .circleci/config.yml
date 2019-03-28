@@ -78,6 +78,7 @@ jobs:
           command: |
             if [[ "$LambdaFunction_ARN" == "" ]]; then
               echo "export LambdaCreatedFunction_ARN=$(aws lambda list-functions --query 'Functions[?FunctionName==`ResetPassword`].FunctionArn' --output text)" >> $BASH_ENV
+              source $BASH_ENV
               aws sns subscribe --topic-arn ${Topic_ARN} --protocol lambda --notification-endpoint ${LambdaCreatedFunction_ARN}
               aws lambda add-permission --function-name ResetPassword --statement-id ${Account_ID} --action "lambda:InvokeFunction" --principal sns.amazonaws.com --source-arn ${Topic_ARN}
             else
