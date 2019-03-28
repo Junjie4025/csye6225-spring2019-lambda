@@ -65,7 +65,7 @@ jobs:
           name: Get AWS Lambda Function Arn and User Id
           command: |
             echo "export LambdaFunction_ARN=$(aws lambda list-functions --query 'Functions[?FunctionName==`ResetPassword`].FunctionArn' --output text)" >> $BASH_ENV
-            echo "export Account_ID=$(aws sts get-caller-identity --output text --query 'Account')" >> $BASH_ENV
+            echo "export Account_ID=$(aws sts get-caller-identity --output text --query Account)" >> $BASH_ENV
       - run:
           name: Subscribe Topic
           command: |
