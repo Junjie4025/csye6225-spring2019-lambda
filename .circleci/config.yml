@@ -1,0 +1,86 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/openjdk:8-jdk
+    steps:
+      - checkout
+
+      - run:
+          name: Install packages
+          command: sudo apt-get update && sudo apt-get install wget zip unzip python2.7 python-pip -y
+
+
+      - run:
+          name: Install awscli
+          command: |
+            sudo pip install awscli
+
+      - run:
+          name: Set AWS Default Region
+          command: aws configure set default.region us-east-1
+
+      - run:
+          name: Build Artifact
+          command: |
+            pwd
+            ls -al
+            mvn clean package shade:shade -DskipTests
+            cd target/
+            ls -al
+            cd ../
+            pwd
+            ls -al
+      - run:
+          name: Zip Artifact
+          command: |
+            echo "Hello the current build number is ${CIRCLE_BUILD_NUM}"
+            pwd
+            mkdir -p codedeploy_artifact
+            cp target/csye6225lambda-1.0-SNAPSHOT.jar codedeploy_artifact/csye6225lambda-${CIRCLE_BUILD_NUM}-SNAPSHOT.jar
+            cd codedeploy_artifact
+            ls -al
+            pwd
+            cd ..
+            pwd
+            ls -al
+      - run:
+          name: Upload Artifact to S3
+          command: |
+            aws s3 sync codedeploy_artifact s3://${S3_BUCKET_URL}
+      - run:
+          name: Make CodeDeploy API call
+          command: |
+            echo "Hello CodeDeploy"
+      - run:
+          name: Get User Id
+          command: |
+            echo "export Account_ID=$(aws sts get-caller-identity --output text --query Account)" >> $BASH_ENV
+      - run:
+          name: Check IAM Role, exist Topic, exist Lambda Function
+          command: |
+            echo 'export Topic_ARN="$(aws sns list-topics --query Topics[0] --output text)"' >> $BASH_ENV
+            echo "export LambdaFunction_ARN=$(aws lambda list-functions --query 'Functions[?FunctionName==`ResetPassword`].FunctionArn' --output text)" >> $BASH_ENV
+            echo "export Role_ARN=$(aws iam list-roles --query 'Roles[?RoleName==`LambdaExeRole`].Arn' --output text)" >> $BASH_ENV
+      - run:
+          name: Create Lambda Function
+          command: |
+            echo "${LambdaFunction_ARN}"
+            if [[ "$LambdaFunction_ARN" == "" ]]; then
+              echo "Lambda Function Not Exist"
+              aws lambda create-function --function-name ResetPassword --runtime java8 --role ${Role_ARN} --handler LogEvent::handleRequest --description csye6225-lambda-function --timeout 60 --memory-size 256 --environment Variables={FROM_EMAIL=${FROM_EMAIL}} --code S3Bucket=${S3_BUCKET_URL},S3Key=csye6225lambda-${CIRCLE_BUILD_NUM}-SNAPSHOT.jar
+            else
+              echo "Lambda Function Exist"
+              aws lambda update-function-code --function-name ResetPassword --s3-bucket ${S3_BUCKET_URL} --s3-key csye6225lambda-${CIRCLE_BUILD_NUM}-SNAPSHOT.jar
+            fi
+      - run:
+          name: Subscribe SNS Topic
+          command: |
+            if [[ "$LambdaFunction_ARN" == "" ]]; then
+              echo "export LambdaCreatedFunction_ARN=$(aws lambda list-functions --query 'Functions[?FunctionName==`ResetPassword`].FunctionArn' --output text)" >> $BASH_ENV
+              source $BASH_ENV
+              aws sns subscribe --topic-arn ${Topic_ARN} --protocol lambda --notification-endpoint ${LambdaCreatedFunction_ARN}
+              aws lambda add-permission --function-name ResetPassword --statement-id ${Account_ID} --action "lambda:InvokeFunction" --principal sns.amazonaws.com --source-arn ${Topic_ARN}
+            else
+              echo "Just Update Lambda Function. SNS Topic Already Subscribed"
+            fi
