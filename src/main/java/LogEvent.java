@@ -53,10 +53,10 @@ public class LogEvent implements RequestHandler<SNSEvent, Object> {
         }
         String subject = "Reset Password Request";
         StringBuilder emailBodyBuilder = new StringBuilder();
-        emailBodyBuilder.append("You are receiving this mail because to chosegi to reset your password.\n");
-        emailBodyBuilder.append("Please click the link below to Reset your password:\n");
-        emailBodyBuilder.append("Link: http://example.com/reset?email=" + toEmail + "&token=" + token+"\n");
-        emailBodyBuilder.append("This link will only be valid for 20 minuits starting: " + getTimeStamp());
+        emailBodyBuilder.append("<p>You are receiving this mail because to chosegi to reset your password.</p>\n");
+        emailBodyBuilder.append("<p>Please click the link below to Reset your password:</p>\n");
+        emailBodyBuilder.append("<p> Link: <a href='http://example.com/reset?email=" + toEmail + "&token=" + token+"'>" + "http://example.com/reset?email=" + toEmail + "&token=" + token + "</a></p>\n");
+        emailBodyBuilder.append("<p>This link will only be valid for 20 minuits starting: " + getTimeStamp() + "</p>");
         context.getLogger().log("4: " + emailBodyBuilder.toString());
         try {
             AmazonSimpleEmailService amazonSimpleEmailService = AmazonSimpleEmailServiceClientBuilder.standard().withRegion(Regions.US_EAST_1).build();
