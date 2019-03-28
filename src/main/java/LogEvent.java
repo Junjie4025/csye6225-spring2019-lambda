@@ -43,7 +43,7 @@ public class LogEvent implements RequestHandler<SNSEvent, Object> {
         context.getLogger().log("Reayd: Get Random String");
         context.getLogger().log("3: " + token);
 
-        if (item != null && item.getLong("ttl") < System.currentTimeMillis() / 1000) {
+        if (item != null && (item.getLong("ttl") > System.currentTimeMillis() / 1000)) {
             context.getLogger().log("Record Already Present");
             return null;
         } else {
