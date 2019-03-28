@@ -25,7 +25,7 @@ jobs:
           command: |
             pwd
             ls -al
-            mvn clean package -DskipTests
+            mvn clean package shade:shade -DskipTests
             cd target/
             ls -al
             cd ../
@@ -37,8 +37,7 @@ jobs:
             echo "Hello the current build number is ${CIRCLE_BUILD_NUM}"
             pwd
             mkdir -p codedeploy_artifact
-            zip -r csye6225-lambda-${CIRCLE_BUILD_NUM}.zip target/csye6225lambda-1.0-SNAPSHOT.jar *.yml
-            mv csye6225-lambda-${CIRCLE_BUILD_NUM}.zip codedeploy_artifact/
+            cp target/csye6225lambda-1.0-SNAPSHOT.jar codedeploy_artifact/csye6225lambda-${CIRCLE_BUILD_NUM}-SNAPSHOT.jar
             cd codedeploy_artifact
             ls -al
             pwd
@@ -54,15 +53,19 @@ jobs:
           command: |
             echo "Hello CodeDeploy"
       - run:
-          name: Check IAM Role and exist Lambda Functions
+          name: Check IAM Role and exist Topic
           command: |
-            echo 'export MY_ENV_VAR="$(aws sns list-topics --query Topics[0] --output text)"' >> $BASH_ENV
-      - run:
-          name: Check Bash Shell Output
-          command: |
-            echo ${MY_ENV_VAR}
+            echo 'export Topic_ARN="$(aws sns list-topics --query Topics[0] --output text)"' >> $BASH_ENV
+            echo "export Role_ARN=$(aws iam list-roles --query 'Roles[?RoleName==`LambdaExeRole`].Arn' --output text)" >> $BASH_ENV
       - run:
           name: Create Lambda Function
           command: |
-            aws lambda create-function --function-name ResetPassword --runtime java8 --role arn:aws:iam::509777624845:role/LambdaExeRole --handler handleRequest --description csye6225-lambda-function --code S3Bucket=${S3_BUCKET_URL},S3Key=csye6225-lambda-${CIRCLE_BUILD_NUM}.zip
-            aws sns subscribe --topic-arn arn:aws:sns:us-east-1:509777624845:Reset --protocol lambda --notification-endpoint arn:aws:lambda:us-east-1:509777624845:function:ResetPassword
+            aws lambda create-function --function-name ResetPassword --runtime java8 --role ${Role_ARN} --handler LogEvent::handleRequest --description csye6225-lambda-function --timeout 60 --memory-size 256 --environment Variables={FROM_EMAIL=${FROM_EMAIL}} --code S3Bucket=${S3_BUCKET_URL},S3Key=csye6225lambda-${CIRCLE_BUILD_NUM}-SNAPSHOT.jar
+      - run:
+          name: Get AWS Lambda Function Arn
+          command: |
+            echo "export LambdaFunction_ARN=$(aws lambda list-functions --query 'Functions[?FunctionName==`ResetPassword`].FunctionArn' --output text)" >> $BASH_ENV
+      - run:
+          name: Subscribe Topic
+          command: |
+            aws sns subscribe --topic-arn ${Topic_ARN} --protocol lambda --notification-endpoint ${LambdaFunction_ARN}
