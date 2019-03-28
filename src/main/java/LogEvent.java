@@ -11,17 +11,17 @@ import com.amazonaws.services.lambda.runtime.events.SNSEvent;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClientBuilder;
 import com.amazonaws.services.simpleemail.model.*;
-import org.apache.commons.lang.RandomStringUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.UUID;
 
 public class LogEvent implements RequestHandler<SNSEvent, Object> {
 
     final static Regions REGION = Regions.US_EAST_1;
     final static String TABLE_NAME = "csye6225";
     final static String DYNAMO_KEY = "id";
-    final static String FROM_EMAIL = "chanceliu@csye6225-spring2019-liuchangsi.me";
+    final static String FROM_EMAIL = System.getenv("FROM_EMAIL");
 
     public Object handleRequest(SNSEvent request, Context context) {
         context.getLogger().log("Invocation started: " + getTimeStamp());
@@ -38,8 +38,8 @@ public class LogEvent implements RequestHandler<SNSEvent, Object> {
         String toEmail = request.getRecords().get(0).getSNS().getMessage().split(",")[0];
         context.getLogger().log("Reayd: Read Email from input");
         Item item = table.getItem(DYNAMO_KEY, toEmail);
-//        String token = RandomStringUtils.random(50);
-        String token = "123";
+        String token = UUID.randomUUID().toString().replaceAll("-","");
+//        String token = "123";
         context.getLogger().log("Reayd: Get Random String");
         context.getLogger().log("3: " + token);
         if (item == null) {
@@ -53,7 +53,7 @@ public class LogEvent implements RequestHandler<SNSEvent, Object> {
         }
         String subject = "Reset Password Request";
         StringBuilder emailBodyBuilder = new StringBuilder();
-        emailBodyBuilder.append("You are receiving this mail because to chose to reset your password.\n");
+        emailBodyBuilder.append("You are receiving this mail because to chosegi to reset your password.\n");
         emailBodyBuilder.append("Please click the link below to Reset your password:\n");
         emailBodyBuilder.append("Link: http://example.com/reset?email=" + toEmail + "&token=" + token+"\n");
         emailBodyBuilder.append("This link will only be valid for 20 minuits starting: " + getTimeStamp());
@@ -61,8 +61,8 @@ public class LogEvent implements RequestHandler<SNSEvent, Object> {
         try {
             AmazonSimpleEmailService amazonSimpleEmailService = AmazonSimpleEmailServiceClientBuilder.standard().withRegion(Regions.US_EAST_1).build();
             Destination destination = new Destination().withToAddresses(toEmail);
-            Content bodyContent = new Content().withCharset("UTF-8").withData(emailBodyBuilder.toString());
-            Content subContent = new Content().withCharset("UTF-8").withData(subject);
+            Content bodyContent = new Content().withCharset("ISO-8859-1").withData(emailBodyBuilder.toString());
+            Content subContent = new Content().withCharset("ISO-8859-1").withData(subject);
             Message message = new Message().withBody(new Body().withHtml(bodyContent)).withSubject(subContent);
             SendEmailRequest emailRequest = new SendEmailRequest().withDestination(destination).withMessage(message).withSource(FROM_EMAIL);
             SendEmailResult result = amazonSimpleEmailService.sendEmail(emailRequest);
